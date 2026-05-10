@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Location Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── User View (default — plain URL, no ?host) ─────────────────────────── -->
+  <div id="user-view">
+    <div id="user-card">
+      <h1>📍 Pin Your Location</h1>
+      <p class="subtitle">Type your location below and it will appear on the shared map.</p>
+      <input
+        type="text"
+        id="location-input"
+        placeholder="e.g. Florida, Paris, Tokyo…"
+        autocomplete="off"
+      />
+      <button id="add-btn">Pin My Location</button>
+      <div id="status-message"></div>
+    </div>
+  </div>
+
+  <!-- ── Host View (only shown when URL contains ?host) ────────────────────── -->
+  <div id="app">
+    <div id="sidebar">
+      <div id="sidebar-header">
+        <h1>Location Map</h1>
+        <span id="live-dot" title="Connecting…"></span>
+      </div>
+      <p class="subtitle">Live view — watching all submitted locations.</p>
+      <button id="copy-link-btn">Copy User Link</button>
+      <button id="reset-btn">Reset Map</button>
+      <div id="location-list">
+        <h2>Locations <span id="total-badge">0 entries</span></h2>
+        <ul id="entries"></ul>
+      </div>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

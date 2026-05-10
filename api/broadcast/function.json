@@ -1,0 +1,21 @@
+{
+  "bindings": [
+    {
+      "type": "cosmosDBTrigger",
+      "name": "documents",
+      "direction": "in",
+      "connectionStringSetting": "COSMOS_DB_CONNECTION",
+      "databaseName": "locationmap",
+      "collectionName": "locations",
+      "leaseCollectionName": "leases",
+      "createLeaseCollectionIfNotExists": true
+    },
+    {
+      "type": "signalR",
+      "name": "signalRMessages",
+      "hubName": "locationmap",
+      "connectionStringSetting": "AzureSignalRConnectionString",
+      "direction": "out"
+    }
+  ]
+}

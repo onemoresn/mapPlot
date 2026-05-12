@@ -11,15 +11,6 @@
       "type": "http",
       "direction": "out",
       "name": "res"
-    },
-    {
-      "type": "cosmosDB",
-      "name": "documents",
-      "databaseName": "locationmap",
-      "collectionName": "locations",
-      "connectionStringSetting": "COSMOS_DB_CONNECTION",
-      "sqlQuery": "SELECT c.id, c.sessionId, c.displayName, c.lat, c.lon, c.locationKey, c.updatedAt FROM c",
-      "direction": "in"
     }
   ]
 }

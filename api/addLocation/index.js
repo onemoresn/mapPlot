@@ -19,7 +19,7 @@ module.exports = async function (context, req) {
     return;
   }
 
-  context.bindings.outputDocument = {
+  const doc = {
     id:          String(sessionId).slice(0, 64),
     sessionId:   String(sessionId).slice(0, 64),
     displayName: displayName.trim().slice(0, 200),
@@ -28,6 +28,13 @@ module.exports = async function (context, req) {
     locationKey: String(locationKey).slice(0, 64),
     updatedAt:   Date.now(),
   };
+
+  context.bindings.outputDocument = doc;
+
+  context.bindings.signalRMessages = [{
+    target: 'locationUpdate',
+    arguments: [doc],
+  }];
 
   context.res = { status: 200, body: { ok: true } };
 };

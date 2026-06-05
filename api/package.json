@@ -1,0 +1,9 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "Azure Functions API for Location Map",
+  "scripts": {},
+  "dependencies": {
+    "@azure/cosmos": "^4.1.0"
+  }
+}

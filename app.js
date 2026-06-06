@@ -1,4 +1,13 @@
-﻿// -- Session identity ---------------------------------------------------------
+﻿// -- API base URL -------------------------------------------------------------
+// When served by VS Code Live Server (or any non-Express port) in local dev,
+// point API calls at the Express server on port 3000.
+const _EXPRESS_PORT = '3000';
+const _onExpressServer =
+  window.location.port === _EXPRESS_PORT ||
+  (window.location.port === '' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
+const API_BASE = _onExpressServer ? '' : `http://localhost:${_EXPRESS_PORT}`;
+
+// -- Session identity ---------------------------------------------------------
 // Each browser tab gets a stable ID so re-submitting updates the same pin
 // rather than creating a duplicate.
 let sessionId = sessionStorage.getItem('locationMapSessionId');
@@ -125,7 +134,7 @@ if (isHost) {
   }
 
   // SSE — receive live updates from the server
-  const evtSource = new EventSource('/locations/stream');
+  const evtSource = new EventSource(`${API_BASE}/locations/stream`);
   evtSource.addEventListener('open', () => {
     liveDot.classList.add('connected');
     liveDot.title = 'Live — syncing in real time';
@@ -140,18 +149,27 @@ if (isHost) {
 
   document.getElementById('reset-btn').addEventListener('click', () => {
     if (confirm('This will clear ALL pins for everyone. Continue?')) {
-      fetch('/locations', { method: 'DELETE' })
+      fetch(`${API_BASE}/locations`, { method: 'DELETE' })
         .then(() => map.setView([20, 0], 2));
     }
   });
 
   document.getElementById('copy-link-btn').addEventListener('click', () => {
-    const userLink = window.location.origin + window.location.pathname + '?user';
-    navigator.clipboard.writeText(userLink).then(() => {
-      const btn = document.getElementById('copy-link-btn');
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = 'Copy User Link'; }, 2000);
-    });
+    const origin = _onExpressServer
+      ? window.location.origin
+      : `http://localhost:${_EXPRESS_PORT}`;
+    const userLink = `${origin}/?user`;
+    const btn = document.getElementById('copy-link-btn');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(userLink).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy User Link'; }, 2000);
+      }).catch(() => {
+        prompt('Copy this link and share it:', userLink);
+      });
+    } else {
+      prompt('Copy this link and share it:', userLink);
+    }
   });
 }
 
@@ -181,7 +199,7 @@ if (!isHost) {
 
     try {
       const result = await geocode(rawLoc);
-      const res = await fetch('/locations', {
+      const res = await fetch(`${API_BASE}/locations`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
@@ -192,7 +210,11 @@ if (!isHost) {
           locationKey: result.locationKey,
         }),
       });
-      if (!res.ok) throw new Error('Failed to save location');
+      if (!res.ok) {
+        let detail = '';
+        try { const body = await res.json(); detail = body.error || ''; } catch { /* ignore */ }
+        throw new Error(detail ? `Failed to save location: ${detail}` : `Failed to save location (${res.status})`);
+      }
       setStatus(`Pinned: ${result.displayName}`, 'success');
       locInput.value     = '';
       addBtn.textContent = 'Update My Location';

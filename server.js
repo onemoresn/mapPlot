@@ -44,6 +44,17 @@ function broadcast() {
 // Middleware
 // ---------------------------------------------------------------------------
 app.use(express.json());
+// Allow Live Server (or any localhost origin) to call the API during local dev
+app.use((req, res, next) => {
+  const origin = req.headers.origin || '';
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 app.use(express.static(path.join(__dirname)));   // serves index.html, app.js, styles.css
 
 // ---------------------------------------------------------------------------
@@ -84,7 +95,12 @@ app.post('/locations', (req, res) => {
 
   const data = readDb();
   data[sessionId] = { display_name: displayName, lat, lon, location_key: locationKey, updated_at: Date.now() };
-  writeDb(data);
+  try {
+    writeDb(data);
+  } catch (err) {
+    console.error('writeDb failed:', err);
+    return res.status(500).json({ error: 'Could not write to database' });
+  }
   broadcast();
   res.json({ ok: true });
 });

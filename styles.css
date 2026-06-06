@@ -406,10 +406,16 @@ h1 {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  pointer-events: none;
 }
 
 #settings-overlay.open {
   display: flex;
+  pointer-events: none;
+}
+
+#settings-modal {
+  pointer-events: all;
 }
 
 #settings-modal {

@@ -66,11 +66,9 @@ const locationsRef = db.collection("locations");
   document.getElementById("settings-close") .addEventListener("click", closeModal);
   document.getElementById("settings-cancel").addEventListener("click", closeModal);
 
-  // Stop clicks inside the modal from reaching the backdrop
-  document.getElementById("settings-modal").addEventListener("click", e => e.stopPropagation());
-
-  // Close only on a direct click of the backdrop (not children)
-  overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+  // Stop ALL events inside the modal from reaching the backdrop
+  document.getElementById("settings-modal").addEventListener("click",   e => e.stopPropagation());
+  document.getElementById("settings-modal").addEventListener("mousedown", e => e.stopPropagation());
 
   // Escape key closes the modal
   document.addEventListener("keydown", e => {

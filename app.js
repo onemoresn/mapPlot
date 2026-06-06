@@ -66,8 +66,21 @@ const locationsRef = db.collection("locations");
   document.getElementById("settings-close") .addEventListener("click", closeModal);
   document.getElementById("settings-cancel").addEventListener("click", closeModal);
 
-  // Close on backdrop click
+  // Stop clicks inside the modal from reaching the backdrop
+  document.getElementById("settings-modal").addEventListener("click", e => e.stopPropagation());
+
+  // Close only on a direct click of the backdrop (not children)
   overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+
+  // Escape key closes the modal
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && overlay.classList.contains("open")) closeModal();
+  });
+
+  // Prevent Enter inside inputs from triggering anything unexpected
+  document.querySelectorAll("#settings-modal input").forEach(input => {
+    input.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+  });
 
   document.getElementById("settings-save").addEventListener("click", () => {
     const cfg = {};

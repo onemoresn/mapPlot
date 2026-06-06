@@ -18,10 +18,12 @@ const savedConfig = loadConfig();
 const firebaseConfig = {
   apiKey:            savedConfig.apiKey            || "YOUR_API_KEY",
   authDomain:        savedConfig.authDomain        || "YOUR_PROJECT.firebaseapp.com",
+  databaseURL:       savedConfig.databaseURL       || undefined,
   projectId:         savedConfig.projectId         || "YOUR_PROJECT_ID",
   storageBucket:     savedConfig.storageBucket     || "YOUR_PROJECT.appspot.com",
   messagingSenderId: savedConfig.messagingSenderId || "YOUR_SENDER_ID",
   appId:             savedConfig.appId             || "YOUR_APP_ID",
+  measurementId:     savedConfig.measurementId     || undefined,
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -33,7 +35,7 @@ const locationsRef = db.collection("locations");
 // =============================================================================
 (function initSettings() {
   const overlay  = document.getElementById("settings-overlay");
-  const fields   = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId"];
+  const fields   = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId", "databaseURL", "measurementId"];
 
   function openModal() {
     const cfg = loadConfig();

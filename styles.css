@@ -517,6 +517,14 @@ h1 {
   color: #e2e8f0;
 }
 
+.settings-fields label .optional {
+  font-size: 0.72rem;
+  color: #475569;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
 #settings-save {
   padding: 9px 20px;
   border-radius: 8px;

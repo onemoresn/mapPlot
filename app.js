@@ -280,21 +280,28 @@ if (!isHost) {
       const result = await geocode(rawLoc);
 
       if (!isConfigured()) {
-        throw new Error("Firebase is not configured. Open Settings and enter your Firebase project details.");
+        throw new Error("Firebase is not configured. Open ⚙ Settings and enter your Firebase project details.");
       }
 
-      // Upsert with a 10s timeout — guards against hanging when config is wrong
+      // Race the Firestore write against a timeout.
+      // If Firebase rejects (bad creds, rules, etc.) that error wins immediately.
+      // The timeout only fires if Firebase goes completely silent (network block, etc.)
+      let firebaseError = null;
+      const writePromise = locationsRef.doc(sessionId).set({
+        session_id:   sessionId,
+        display_name: result.displayName,
+        lat:          result.lat,
+        lon:          result.lon,
+        location_key: result.locationKey,
+        updated_at:   firebase.firestore.FieldValue.serverTimestamp(),
+      }).catch(err => { firebaseError = err; throw err; });
+
       await withTimeout(
-        locationsRef.doc(sessionId).set({
-          session_id:   sessionId,
-          display_name: result.displayName,
-          lat:          result.lat,
-          lon:          result.lon,
-          location_key: result.locationKey,
-          updated_at:   firebase.firestore.FieldValue.serverTimestamp(),
-        }),
+        writePromise,
         10000,
-        "Could not reach Firebase — check your Settings and Firestore rules."
+        firebaseError
+          ? firebaseError.message
+          : "Could not reach Firebase — check your Settings and Firestore rules."
       );
 
       setStatus(`Pinned: ${result.displayName}`, "success");

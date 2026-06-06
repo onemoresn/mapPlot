@@ -317,13 +317,19 @@ h1 {
 }
 
 /* ── N-FNIT branding ─────────────────────────────────────────────────────────── */
+#sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #334155;
+}
+
 .nfnit-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 16px;
-  border-top: 1px solid #1e293b;
-  margin-top: auto;
 }
 
 .nfnit-logo {
@@ -349,7 +355,7 @@ h1 {
 
 @keyframes nfnit-type {
   from { width: 0; }
-  to   { width: 13.5ch; }
+  to   { width: 18ch; }
 }
 
 @keyframes nfnit-blink {

@@ -1,2 +1,6 @@
 node_modules/
 locations.json
+
+pb_data/
+pocketbase.exe
+pocketbase

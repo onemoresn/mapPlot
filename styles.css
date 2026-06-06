@@ -193,6 +193,11 @@ h1 {
 .status-error   { color: #f87171; }
 
 /* ── Location list ──────────────────────────────────────────────────────────── */
+#location-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
 #location-list h2 {
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -309,6 +314,47 @@ h1 {
 .popup-count {
   color: #818cf8;
   font-weight: 600;
+}
+
+/* ── N-FNIT branding ─────────────────────────────────────────────────────────── */
+.nfnit-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #1e293b;
+  margin-top: auto;
+}
+
+.nfnit-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.nfnit-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6366f1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid #6366f1;
+  width: 0;
+  animation: nfnit-type 1.8s steps(18, end) 0.5s forwards,
+             nfnit-blink 0.75s step-end 2.3s 4;
+}
+
+@keyframes nfnit-type {
+  from { width: 0; }
+  to   { width: 13.5ch; }
+}
+
+@keyframes nfnit-blink {
+  0%, 100% { border-color: #6366f1; }
+  50%       { border-color: transparent; }
 }
 
 /* ── Settings button ────────────────────────────────────────────────────────── */

@@ -1,7 +1,7 @@
 {
   "name": "map-plot",
-  "version": "2.0.0",
-  "description": "Real-time location map powered by PocketBase",
+  "version": "3.0.0",
+  "description": "Real-time location map powered by Firebase Firestore",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

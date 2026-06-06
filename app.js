@@ -15,7 +15,7 @@ function saveConfig(cfg) {
 
 function isConfigured() {
   const c = loadConfig();
-  return c.apiKey && c.projectId && !c.apiKey.startsWith("YOUR_");
+  return c.apiKey && c.databaseURL && !c.apiKey.startsWith("YOUR_");
 }
 
 function withTimeout(promise, ms, msg) {
@@ -39,8 +39,8 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db           = firebase.firestore();
-const locationsRef = db.collection("locations");
+const db           = firebase.database();
+const locationsRef = db.ref("locations");
 
 // =============================================================================
 // Settings modal
@@ -223,30 +223,28 @@ if (isHost) {
       });
   }
 
-  // Real-time listener � Firestore onSnapshot replaces SSE
+  // Real-time listener — Realtime Database
   liveDot.classList.add("connecting");
   liveDot.title = "Connecting to Firebase…";
 
-  locationsRef.onSnapshot(
+  locationsRef.on("value",
     snapshot => {
       liveDot.classList.remove("connecting");
       liveDot.classList.add("connected");
       liveDot.title = "Live — syncing in real time";
-      render(snapshot.docs.map(doc => doc.data()));
+      const val = snapshot.val() || {};
+      render(Object.values(val));
     },
     err => {
       liveDot.classList.remove("connecting", "connected");
-      liveDot.title = "Connection error � check Firebase config";
-      console.error("Firestore onSnapshot error:", err);
+      liveDot.title = "Connection error — check Firebase config";
+      console.error("Realtime Database error:", err);
     }
   );
 
   document.getElementById("reset-btn").addEventListener("click", async () => {
     if (confirm("This will clear ALL pins for everyone. Continue?")) {
-      const snapshot = await locationsRef.get();
-      const batch    = db.batch();
-      snapshot.docs.forEach(doc => batch.delete(doc.ref));
-      await batch.commit();
+      await locationsRef.remove();
       map.setView([20, 0], 2);
     }
   });
@@ -298,17 +296,15 @@ if (!isHost) {
         throw new Error("Firebase is not configured. Open ⚙ Settings and enter your Firebase project details.");
       }
 
-      // Race the Firestore write against a timeout.
-      // If Firebase rejects (bad creds, rules, etc.) that error wins immediately.
-      // The timeout only fires if Firebase goes completely silent (network block, etc.)
+      // Race the RTDB write against a timeout.
       let firebaseError = null;
-      const writePromise = locationsRef.doc(sessionId).set({
+      const writePromise = locationsRef.child(sessionId).set({
         session_id:   sessionId,
         display_name: result.displayName,
         lat:          result.lat,
         lon:          result.lon,
         location_key: result.locationKey,
-        updated_at:   firebase.firestore.FieldValue.serverTimestamp(),
+        updated_at:   firebase.database.ServerValue.TIMESTAMP,
       }).catch(err => { firebaseError = err; throw err; });
 
       await withTimeout(
@@ -316,7 +312,7 @@ if (!isHost) {
         10000,
         firebaseError
           ? firebaseError.message
-          : "Could not reach Firebase — check your Settings and Firestore rules."
+          : "Could not reach Firebase — check your Settings and Database rules."
       );
 
       setStatus(`Pinned: ${result.displayName}`, "success");

@@ -92,10 +92,13 @@ const locationsRef = db.ref("locations");
 })();
 
 // -- Session identity ---------------------------------------------------------
-let sessionId = sessionStorage.getItem("locationMapSessionId");
+// Use localStorage (not sessionStorage) so each device keeps the same ID
+// across tab closes, refreshes, and mobile browser restarts — preventing
+// duplicate pins from the same device.
+let sessionId = localStorage.getItem("locationMapSessionId");
 if (!sessionId) {
   sessionId = "u_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  sessionStorage.setItem("locationMapSessionId", sessionId);
+  localStorage.setItem("locationMapSessionId", sessionId);
 }
 
 // -- Mode detection -----------------------------------------------------------
@@ -172,12 +175,18 @@ if (isHost) {
             <span class="popup-count">${count} ${count === 1 ? "person" : "people"}</span>`;
   }
 
-  // rows = array of Firestore doc data: { session_id, display_name, lat, lon, location_key }
+  // rows = array of RTDB values: { session_id, display_name, lat, lon, location_key }
   function render(rows) {
     Object.values(rendered).forEach(loc => loc.marker && loc.marker.remove());
     Object.keys(rendered).forEach(k => delete rendered[k]);
 
-    rows.forEach(row => {
+    // Skip any malformed entries that are missing required fields
+    const validRows = rows.filter(row =>
+      row && row.location_key && row.display_name &&
+      typeof row.lat === "number" && typeof row.lon === "number"
+    );
+
+    validRows.forEach(row => {
       const key = row.location_key;
       if (!rendered[key]) {
         rendered[key] = {
@@ -197,7 +206,7 @@ if (isHost) {
       loc.marker = marker;
     });
 
-    const totalUsers = rows.length;
+    const totalUsers = validRows.length;
     totalBadge.textContent = `${totalUsers} ${totalUsers === 1 ? "entry" : "entries"}`;
     entriesList.innerHTML  = "";
 

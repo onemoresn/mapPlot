@@ -64,7 +64,7 @@ const locationsRef = db.ref("locations");
 // =============================================================================
 (function initSettings() {
   const overlay  = document.getElementById("settings-overlay");
-  const fields   = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId", "databaseURL", "measurementId"];
+  const fields   = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId", "databaseURL", "measurementId", "hostedUrl"];
 
   function openModal() {
     const cfg = loadConfig();
@@ -265,9 +265,10 @@ if (isHost) {
   });
 
   document.getElementById("copy-link-btn").addEventListener("click", () => {
-    const cfg     = loadConfig();
-    const encoded = btoa(JSON.stringify(cfg));
-    const userLink = window.location.origin + window.location.pathname + "?user#cfg=" + encoded;
+    const cfg      = loadConfig();
+    const base     = (cfg.hostedUrl || window.location.origin).replace(/\/$/, '');
+    const encoded  = btoa(JSON.stringify(cfg));
+    const userLink = `${base}/?user#cfg=${encoded}`;
     const btn = document.getElementById("copy-link-btn");
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(userLink).then(() => {

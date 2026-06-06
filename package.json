@@ -1,13 +1,49 @@
 {
-  "name": "map-plot",
-  "version": "3.0.0",
-  "description": "Real-time location map powered by Firebase Firestore",
-  "main": "server.js",
+  "name": "mapplot",
+  "version": "1.0.0",
+  "description": "Real-time location map powered by Firebase",
+  "main": "electron/main.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start":      "node server.js",
+    "electron":   "electron .",
+    "icon":       "node scripts/build-icon.js",
+    "build:win":  "npm run icon && electron-builder --win"
   },
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "electron":         "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "png-to-ico":       "^2.1.8"
+  },
+  "build": {
+    "appId":       "com.nfnit.mapplot",
+    "productName": "MapPlot",
+    "copyright":   "Copyright © 2024 N-FNIT Development",
+    "files": [
+      "index.html",
+      "app.js",
+      "styles.css",
+      "MapPlot.png",
+      "N-FNIT Logo.png",
+      "electron/**",
+      "build/icon.ico"
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon":   "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick":                       false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut":          true,
+      "createStartMenuShortcut":        true,
+      "shortcutName":                   "MapPlot"
+    },
+    "directories": {
+      "output": "dist"
+    }
   }
 }
+

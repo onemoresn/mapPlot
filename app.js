@@ -2,10 +2,27 @@
 // Firebase configuration
 // =============================================================================
 // Config is stored in localStorage so the host can enter it via the Settings
-// panel without touching code. Fallback values are just placeholders.
+// panel without touching code. When the host copies the user link, the config
+// is embedded in the URL hash so remote devices receive it automatically.
 const STORAGE_KEY = "mapplot_firebase_config";
 
 function loadConfig() {
+  // 1. Check URL hash for embedded config (user devices opening a shared link)
+  try {
+    const hash = window.location.hash.slice(1);
+    const params = new URLSearchParams(hash);
+    const encoded = params.get("cfg");
+    if (encoded) {
+      const cfg = JSON.parse(atob(encoded));
+      // Save it locally so subsequent refreshes don't need the hash
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+      // Clean the hash from the URL without reloading
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+      return cfg;
+    }
+  } catch { /* ignore malformed hash */ }
+
+  // 2. Fall back to locally saved config
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
 }
 
@@ -259,7 +276,9 @@ if (isHost) {
   });
 
   document.getElementById("copy-link-btn").addEventListener("click", () => {
-    const userLink = window.location.origin + window.location.pathname + "?user";
+    const cfg     = loadConfig();
+    const encoded = btoa(JSON.stringify(cfg));
+    const userLink = window.location.origin + window.location.pathname + "?user#cfg=" + encoded;
     const btn = document.getElementById("copy-link-btn");
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(userLink).then(() => {

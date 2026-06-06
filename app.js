@@ -213,14 +213,18 @@ if (isHost) {
   }
 
   // Real-time listener � Firestore onSnapshot replaces SSE
+  liveDot.classList.add("connecting");
+  liveDot.title = "Connecting to Firebase…";
+
   locationsRef.onSnapshot(
     snapshot => {
+      liveDot.classList.remove("connecting");
       liveDot.classList.add("connected");
-      liveDot.title = "Live � syncing in real time";
+      liveDot.title = "Live — syncing in real time";
       render(snapshot.docs.map(doc => doc.data()));
     },
     err => {
-      liveDot.classList.remove("connected");
+      liveDot.classList.remove("connecting", "connected");
       liveDot.title = "Connection error � check Firebase config";
       console.error("Firestore onSnapshot error:", err);
     }

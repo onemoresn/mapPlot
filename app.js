@@ -13,6 +13,18 @@ function saveConfig(cfg) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
 }
 
+function isConfigured() {
+  const c = loadConfig();
+  return c.apiKey && c.projectId && !c.apiKey.startsWith("YOUR_");
+}
+
+function withTimeout(promise, ms, msg) {
+  const t = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(msg)), ms)
+  );
+  return Promise.race([promise, t]);
+}
+
 const savedConfig = loadConfig();
 
 const firebaseConfig = {
@@ -80,6 +92,17 @@ const isHost = !new URLSearchParams(window.location.search).has("user");
 
 document.getElementById("app").style.display       = isHost ? "flex" : "none";
 document.getElementById("user-view").style.display = isHost ? "none" : "flex";
+
+// Warn user-view visitors immediately if Firebase isn't set up
+if (!isHost && !isConfigured()) {
+  const statusMsg = document.getElementById("status-message");
+  if (statusMsg) {
+    statusMsg.textContent = "This app is not yet configured. Contact the host.";
+    statusMsg.className   = "status-error";
+  }
+  const addBtn = document.getElementById("add-btn");
+  if (addBtn) addBtn.disabled = true;
+}
 
 // -- Shared helpers -----------------------------------------------------------
 function escapeHtml(str) {
@@ -256,15 +279,23 @@ if (!isHost) {
     try {
       const result = await geocode(rawLoc);
 
-      // doc(sessionId) naturally upserts � same tab always updates the same pin
-      await locationsRef.doc(sessionId).set({
-        session_id:   sessionId,
-        display_name: result.displayName,
-        lat:          result.lat,
-        lon:          result.lon,
-        location_key: result.locationKey,
-        updated_at:   firebase.firestore.FieldValue.serverTimestamp(),
-      });
+      if (!isConfigured()) {
+        throw new Error("Firebase is not configured. Open Settings and enter your Firebase project details.");
+      }
+
+      // Upsert with a 10s timeout — guards against hanging when config is wrong
+      await withTimeout(
+        locationsRef.doc(sessionId).set({
+          session_id:   sessionId,
+          display_name: result.displayName,
+          lat:          result.lat,
+          lon:          result.lon,
+          location_key: result.locationKey,
+          updated_at:   firebase.firestore.FieldValue.serverTimestamp(),
+        }),
+        10000,
+        "Could not reach Firebase — check your Settings and Firestore rules."
+      );
 
       setStatus(`Pinned: ${result.displayName}`, "success");
       locInput.value     = "";

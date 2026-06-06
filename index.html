@@ -35,6 +35,7 @@
       <p class="subtitle">Live view — watching all submitted locations.</p>
       <button id="copy-link-btn">Copy User Link</button>
       <button id="reset-btn">Reset Map</button>
+      <button id="settings-btn">⚙ Settings</button>
       <div id="location-list">
         <h2>Locations <span id="total-badge">0 entries</span></h2>
         <ul id="entries"></ul>
@@ -47,5 +48,32 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="app.js"></script>
+
+  <!-- ── Settings Modal ───────────────────────────────────────────────────── -->
+  <div id="settings-overlay">
+    <div id="settings-modal">
+      <div id="settings-header">
+        <h2>⚙ Firebase Settings</h2>
+        <button id="settings-close" aria-label="Close">✕</button>
+      </div>
+      <p class="settings-hint">
+        Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>,
+        create a project, add a Web app, and paste the config values below.
+        Settings are saved in your browser.
+      </p>
+      <div class="settings-fields">
+        <label>API Key<input id="cfg-apiKey"            type="text"  placeholder="AIza…" autocomplete="off" /></label>
+        <label>Auth Domain<input id="cfg-authDomain"   type="text"  placeholder="your-app.firebaseapp.com" /></label>
+        <label>Project ID<input id="cfg-projectId"     type="text"  placeholder="your-project-id" /></label>
+        <label>Storage Bucket<input id="cfg-storageBucket" type="text" placeholder="your-app.appspot.com" /></label>
+        <label>Messaging Sender ID<input id="cfg-messagingSenderId" type="text" placeholder="000000000000" /></label>
+        <label>App ID<input id="cfg-appId"             type="text"  placeholder="1:000000000000:web:…" /></label>
+      </div>
+      <div id="settings-actions">
+        <button id="settings-cancel">Cancel</button>
+        <button id="settings-save">Save &amp; Reload</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

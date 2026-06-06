@@ -1,25 +1,70 @@
 // =============================================================================
 // Firebase configuration
-// -----------------------------------------------------------------------------
-// 1. Go to https://console.firebase.google.com
-// 2. Create a project (or open an existing one)
-// 3. Project Settings ? Your apps ? Web app ? SDK setup ? Config
-// 4. Paste your values below
-// 5. In Firestore ? Rules, set:
-//      allow read, write: if true;
 // =============================================================================
+// Config is stored in localStorage so the host can enter it via the Settings
+// panel without touching code. Fallback values are just placeholders.
+const STORAGE_KEY = "mapplot_firebase_config";
+
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+}
+
+const savedConfig = loadConfig();
+
 const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
+  apiKey:            savedConfig.apiKey            || "YOUR_API_KEY",
+  authDomain:        savedConfig.authDomain        || "YOUR_PROJECT.firebaseapp.com",
+  projectId:         savedConfig.projectId         || "YOUR_PROJECT_ID",
+  storageBucket:     savedConfig.storageBucket     || "YOUR_PROJECT.appspot.com",
+  messagingSenderId: savedConfig.messagingSenderId || "YOUR_SENDER_ID",
+  appId:             savedConfig.appId             || "YOUR_APP_ID",
 };
 
 firebase.initializeApp(firebaseConfig);
 const db           = firebase.firestore();
 const locationsRef = db.collection("locations");
+
+// =============================================================================
+// Settings modal
+// =============================================================================
+(function initSettings() {
+  const overlay  = document.getElementById("settings-overlay");
+  const fields   = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId"];
+
+  function openModal() {
+    const cfg = loadConfig();
+    fields.forEach(k => {
+      const el = document.getElementById("cfg-" + k);
+      if (el) el.value = cfg[k] || "";
+    });
+    overlay.classList.add("open");
+  }
+
+  function closeModal() {
+    overlay.classList.remove("open");
+  }
+
+  document.getElementById("settings-btn")   .addEventListener("click", openModal);
+  document.getElementById("settings-close") .addEventListener("click", closeModal);
+  document.getElementById("settings-cancel").addEventListener("click", closeModal);
+
+  // Close on backdrop click
+  overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+
+  document.getElementById("settings-save").addEventListener("click", () => {
+    const cfg = {};
+    fields.forEach(k => {
+      cfg[k] = (document.getElementById("cfg-" + k).value || "").trim();
+    });
+    saveConfig(cfg);
+    closeModal();
+    window.location.reload();
+  });
+})();
 
 // -- Session identity ---------------------------------------------------------
 let sessionId = sessionStorage.getItem("locationMapSessionId");
@@ -60,7 +105,7 @@ async function geocode(query) {
 }
 
 // =============================================================================
-// HOST MODE — full map view
+// HOST MODE ï¿½ full map view
 // =============================================================================
 if (isHost) {
   const map = L.map("map").setView([20, 0], 2);
@@ -142,16 +187,16 @@ if (isHost) {
       });
   }
 
-  // Real-time listener — Firestore onSnapshot replaces SSE
+  // Real-time listener ï¿½ Firestore onSnapshot replaces SSE
   locationsRef.onSnapshot(
     snapshot => {
       liveDot.classList.add("connected");
-      liveDot.title = "Live — syncing in real time";
+      liveDot.title = "Live ï¿½ syncing in real time";
       render(snapshot.docs.map(doc => doc.data()));
     },
     err => {
       liveDot.classList.remove("connected");
-      liveDot.title = "Connection error — check Firebase config";
+      liveDot.title = "Connection error ï¿½ check Firebase config";
       console.error("Firestore onSnapshot error:", err);
     }
   );
@@ -183,7 +228,7 @@ if (isHost) {
 }
 
 // =============================================================================
-// USER MODE — location entry form only
+// USER MODE ï¿½ location entry form only
 // =============================================================================
 if (!isHost) {
   const locInput  = document.getElementById("location-input");
@@ -209,7 +254,7 @@ if (!isHost) {
     try {
       const result = await geocode(rawLoc);
 
-      // doc(sessionId) naturally upserts — same tab always updates the same pin
+      // doc(sessionId) naturally upserts ï¿½ same tab always updates the same pin
       await locationsRef.doc(sessionId).set({
         session_id:   sessionId,
         display_name: result.displayName,

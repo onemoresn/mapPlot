@@ -124,17 +124,6 @@ const isHost = !new URLSearchParams(window.location.search).has("user");
 document.getElementById("app").style.display       = isHost ? "flex" : "none";
 document.getElementById("user-view").style.display = isHost ? "none" : "flex";
 
-// Warn user-view visitors immediately if Firebase isn't set up
-if (!isHost && !isConfigured()) {
-  const statusMsg = document.getElementById("status-message");
-  if (statusMsg) {
-    statusMsg.textContent = "This app is not yet configured. Contact the host.";
-    statusMsg.className   = "status-error";
-  }
-  const addBtn = document.getElementById("add-btn");
-  if (addBtn) addBtn.disabled = true;
-}
-
 // -- Shared helpers -----------------------------------------------------------
 function escapeHtml(str) {
   return String(str)
@@ -321,7 +310,7 @@ if (!isHost) {
       const result = await geocode(rawLoc);
 
       if (!isConfigured()) {
-        throw new Error("Firebase is not configured. Open ⚙ Settings and enter your Firebase project details.");
+        throw new Error("Link is missing configuration. Ask the host to re-copy and re-share the user link.");
       }
 
       // Race the RTDB write against a timeout.

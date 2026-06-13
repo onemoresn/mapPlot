@@ -56,8 +56,14 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db           = firebase.database();
-const locationsRef = db.ref("locations");
+let db           = null;
+let locationsRef = null;
+try {
+  db           = firebase.database();
+  locationsRef = db.ref("locations");
+} catch (err) {
+  console.warn("Firebase database not initialized:", err.message);
+}
 
 const AZURE_STORAGE_KEY = "mapplot_azure_config";
 
@@ -407,12 +413,16 @@ if (isHost) {
   }
 
   // Real-time listener — Realtime Database
+  if (!locationsRef) {
+    liveDot.classList.add("error");
+    liveDot.title = "Not configured — open ⚙ Settings to connect Firebase";
+  } else {
   liveDot.classList.add("connecting");
   liveDot.title = "Connecting to Firebase…";
 
   locationsRef.on("value",
     snapshot => {
-      liveDot.classList.remove("connecting");
+      liveDot.classList.remove("connecting", "error");
       liveDot.classList.add("connected");
       liveDot.title = "Live — syncing in real time";
       const val = snapshot.val() || {};
@@ -420,10 +430,15 @@ if (isHost) {
     },
     err => {
       liveDot.classList.remove("connecting", "connected");
-      liveDot.title = "Connection error — check Firebase config";
+      liveDot.classList.add("error");
+      const hint = err.code === "PERMISSION_DENIED"
+        ? "Permission denied — set .read and .write to true in Firebase Rules"
+        : "Connection error — check Firebase config in ⚙ Settings";
+      liveDot.title = hint;
       console.error("Realtime Database error:", err);
     }
   );
+  }
 
   document.getElementById("reset-btn").addEventListener("click", async () => {
     if (confirm("This will clear ALL pins for everyone. Continue?")) {

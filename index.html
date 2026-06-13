@@ -169,7 +169,7 @@
           <li>Select <strong>Start in test mode</strong>, then click <strong>Enable</strong></li>
           <li>Copy the Database URL shown at the top of the page:<br /><code>https://your-app-default-rtdb.firebaseio.com</code></li>
         </ol>
-        <p class="wz-warn">⚠ Test mode allows open read/write for 30 days. Update your database security rules for a permanent deployment.</p>
+        <p class="wz-warn">⚠ Test mode rules expire after <strong>30 days</strong>, after which all reads and writes are blocked. For a permanent deployment, go to <strong>Realtime Database → Rules</strong> in the Firebase Console and set both <code>.read</code> and <code>.write</code> to <code>true</code>, then click <strong>Publish</strong>.</p>
         <div class="wz-actions">
           <button class="wz-back-btn">← Back</button>
           <button class="wz-next-btn">Next →</button>

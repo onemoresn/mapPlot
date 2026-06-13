@@ -289,13 +289,15 @@
             <dt>Location not found</dt>
             <dd>Try a broader term — use a city or country instead of a full street address.</dd>
             <dt>Map not updating / yellow dot</dt>
-            <dd>Check your Firebase config in <strong>⚙ Settings</strong>. Make sure the Database URL is correct and Realtime Database is enabled.</dd>
+            <dd>Check your Firebase config in <strong>⚙ Settings</strong>. Make sure the Database URL is correct and Realtime Database is enabled. Also check your database rules — if <code>.read</code> is not set to <code>true</code>, the host map cannot receive live updates. In the Firebase Console go to <strong>Realtime Database → Rules</strong> and confirm both <code>.read</code> and <code>.write</code> are <code>true</code>.</dd>
             <dt>Pins not saving (permission denied)</dt>
-            <dd>In the Firebase Console, go to <strong>Realtime Database → Rules</strong> and confirm <code>.write</code> is <code>true</code> or appropriately scoped.</dd>
+            <dd>In the Firebase Console, go to <strong>Realtime Database → Rules</strong> and confirm both <code>.read</code> and <code>.write</code> are set to <code>true</code> (or appropriately scoped). Without <code>.write: true</code> users cannot save pins; without <code>.read: true</code> the host map cannot load them.</dd>
             <dt>User link says "missing configuration"</dt>
             <dd>Re-copy the user link from the sidebar after saving your config — the link automatically embeds the config.</dd>
             <dt>Firebase test mode expired</dt>
-            <dd>Test mode lasts 30 days. Update your database rules in the Firebase Console to re-allow writes.</dd>
+            <dd>When you create a Realtime Database in test mode, Firebase automatically sets the rules to expire after <strong>30 days</strong>. After expiry, all reads and writes are blocked — the host map stops updating and users cannot save pins. To fix it, go to <strong>Realtime Database → Rules</strong> in the Firebase Console and replace the rules with:
+              <br /><code>{ "rules": { ".read": true, ".write": true } }</code>
+              <br />Then click <strong>Publish</strong>. This re-enables full access with no expiry.</dd>
           </dl>
         </section>
 

@@ -155,6 +155,65 @@ function saveAzureConfig(cfg) {
     closeModal();
     window._openWizard && window._openWizard();
   });
+
+  // ── Firebase Rules Helper ──────────────────────────────────────────────────
+  (function initRulesHelper() {
+    const select   = document.getElementById("rules-expiry-select");
+    const snippet  = document.getElementById("rules-snippet");
+    const copyBtn  = document.getElementById("rules-copy-btn");
+    const badge    = document.getElementById("rules-status-badge");
+
+    function msForOption(val) {
+      const now = Date.now();
+      if (val === "1y") return now + 365  * 24 * 60 * 60 * 1000;
+      if (val === "2y") return now + 730  * 24 * 60 * 60 * 1000;
+      if (val === "5y") return now + 1825 * 24 * 60 * 60 * 1000;
+      return null; // never
+    }
+
+    function buildSnippet(val) {
+      const ts = msForOption(val);
+      if (ts === null) {
+        return `{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}`;
+      }
+      const expDate = new Date(ts).toISOString().slice(0, 10);
+      return `{\n  "rules": {\n    ".read": "now < ${ts}",  // ${expDate}\n    ".write": "now < ${ts}"  // ${expDate}\n  }\n}`;
+    }
+
+    function updateBadge() {
+      // Check if current rules are expired by testing locationsRef connection
+      if (!locationsRef) {
+        badge.textContent = "Not connected";
+        badge.className = "rules-badge rules-badge-error";
+      } else {
+        badge.textContent = "";
+      }
+    }
+
+    function refresh() {
+      snippet.textContent = buildSnippet(select.value);
+      updateBadge();
+    }
+
+    select.addEventListener("change", refresh);
+    refresh();
+
+    copyBtn.addEventListener("click", () => {
+      const text = snippet.textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy Rules"; }, 2000);
+        });
+      } else {
+        prompt("Copy these rules:", text);
+      }
+    });
+
+    // Refresh badge whenever the modal opens
+    const origOpen = window._settingsOpenHook;
+    window._settingsOpenHook = function() { refresh(); if (origOpen) origOpen(); };
+  })();
 })();
 
 // -- Session identity ---------------------------------------------------------

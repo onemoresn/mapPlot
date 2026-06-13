@@ -89,6 +89,27 @@
           <label>Measurement ID <span class="optional">(optional)</span><input id="cfg-measurementId" type="text" placeholder="G-XXXXXXXXXX" /></label>
           <label>Hosted URL <span class="optional">(for user link)</span><input id="cfg-hostedUrl" type="text" placeholder="https://yourdomain.com" /></label>
         </div>
+
+        <!-- Rules helper -->
+        <div id="rules-helper">
+          <div id="rules-helper-header">
+            <span>🔒 Database Rules</span>
+            <span id="rules-status-badge"></span>
+          </div>
+          <p class="settings-hint">Paste this into <a href="https://console.firebase.google.com" target="_blank" rel="noopener">Firebase Console → Realtime Database → Rules</a> and click <strong>Publish</strong>.</p>
+          <div id="rules-expiry-row">
+            <label class="rules-label">Expire after
+              <select id="rules-expiry-select">
+                <option value="never">Never (open)</option>
+                <option value="1y">1 year</option>
+                <option value="2y">2 years</option>
+                <option value="5y">5 years</option>
+              </select>
+            </label>
+          </div>
+          <pre id="rules-snippet"></pre>
+          <button id="rules-copy-btn">Copy Rules</button>
+        </div>
       </div>
 
       <!-- Azure tab -->

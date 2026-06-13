@@ -614,6 +614,104 @@ h1 {
   background: #4f46e5;
 }
 
+/* ── Firebase Rules Helper ──────────────────────────────────────────────────── */
+#rules-helper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 4px;
+}
+
+#rules-helper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rules-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.rules-badge-error {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+#rules-expiry-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rules-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#rules-expiry-select {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+}
+
+#rules-snippet {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  color: #a5b4fc;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  white-space: pre;
+  overflow-x: auto;
+  margin: 0;
+  line-height: 1.6;
+}
+
+#rules-copy-btn {
+  align-self: flex-end;
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+#rules-copy-btn:hover {
+  background: #1e3a5f;
+  border-color: #6366f1;
+  color: #a5b4fc;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   #app {

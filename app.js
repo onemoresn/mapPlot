@@ -59,19 +59,48 @@ firebase.initializeApp(firebaseConfig);
 const db           = firebase.database();
 const locationsRef = db.ref("locations");
 
+const AZURE_STORAGE_KEY = "mapplot_azure_config";
+
+function loadAzureConfig() {
+  try { return JSON.parse(localStorage.getItem(AZURE_STORAGE_KEY)) || {}; } catch { return {}; }
+}
+
+function saveAzureConfig(cfg) {
+  localStorage.setItem(AZURE_STORAGE_KEY, JSON.stringify(cfg));
+}
+
 // =============================================================================
 // Settings modal
 // =============================================================================
 (function initSettings() {
-  const overlay  = document.getElementById("settings-overlay");
-  const fields   = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId", "databaseURL", "measurementId", "hostedUrl"];
+  const overlay       = document.getElementById("settings-overlay");
+  const firebaseFields = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId", "databaseURL", "measurementId", "hostedUrl"];
+  const azureFields    = ["cosmosConnection", "signalrConnection", "azureUrl", "cosmosDb", "cosmosContainer", "signalrHub"];
+
+  // ── Tab switching ──
+  document.querySelectorAll(".stab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".stab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".stab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
 
   function openModal() {
-    const cfg = loadConfig();
-    fields.forEach(k => {
+    const cfg  = loadConfig();
+    const acfg = loadAzureConfig();
+    firebaseFields.forEach(k => {
       const el = document.getElementById("cfg-" + k);
       if (el) el.value = cfg[k] || "";
     });
+    azureFields.forEach(k => {
+      const el = document.getElementById("cfg-" + k);
+      if (el) el.value = acfg[k] || "";
+    });
+    // Reset to Firebase tab on each open
+    document.querySelectorAll(".stab").forEach(b => b.classList.toggle("active", b.dataset.tab === "tab-firebase"));
+    document.querySelectorAll(".stab-panel").forEach(p => p.classList.toggle("active", p.id === "tab-firebase"));
     overlay.classList.add("open");
   }
 
@@ -98,13 +127,27 @@ const locationsRef = db.ref("locations");
   });
 
   document.getElementById("settings-save").addEventListener("click", () => {
+    // Save Firebase config
     const cfg = {};
-    fields.forEach(k => {
+    firebaseFields.forEach(k => {
       cfg[k] = (document.getElementById("cfg-" + k).value || "").trim();
     });
     saveConfig(cfg);
+
+    // Save Azure config separately
+    const acfg = {};
+    azureFields.forEach(k => {
+      acfg[k] = (document.getElementById("cfg-" + k).value || "").trim();
+    });
+    saveAzureConfig(acfg);
+
     closeModal();
     window.location.reload();
+  });
+
+  document.getElementById("launch-wizard-btn").addEventListener("click", () => {
+    closeModal();
+    window._openWizard && window._openWizard();
   });
 })();
 
@@ -123,6 +166,131 @@ const isHost = !new URLSearchParams(window.location.search).has("user");
 
 document.getElementById("app").style.display       = isHost ? "flex" : "none";
 document.getElementById("user-view").style.display = isHost ? "none" : "flex";
+
+// =============================================================================
+// Setup wizard — auto-opens on first run if Firebase is not configured
+// =============================================================================
+(function initWizard() {
+  const overlay = document.getElementById("wizard-overlay");
+  const dots    = Array.from(overlay.querySelectorAll(".wdot"));
+  const steps   = Array.from(overlay.querySelectorAll(".wz-step"));
+  const FIELDS  = ["apiKey", "authDomain", "databaseURL", "projectId",
+                   "storageBucket", "messagingSenderId", "appId", "measurementId"];
+  let current = 0;
+
+  function showStep(n) {
+    steps.forEach((s, i) => s.classList.toggle("active", i === n));
+    dots.forEach((d, i)  => d.classList.toggle("active", i === n));
+    current = n;
+    overlay.querySelector("#wizard-modal").scrollTop = 0;
+  }
+
+  function open() {
+    const cfg = loadConfig();
+    FIELDS.forEach(k => {
+      const el = document.getElementById("wz-" + k);
+      if (el) el.value = cfg[k] || "";
+    });
+    const hostedEl = document.getElementById("wz-hostedUrl");
+    if (hostedEl) hostedEl.value = cfg.hostedUrl || "";
+    document.getElementById("wz-error").textContent = "";
+    overlay.classList.add("open");
+    showStep(0);
+  }
+
+  function close() {
+    overlay.classList.remove("open");
+  }
+
+  // Expose for external callers (settings modal)
+  window._openWizard = open;
+
+  // X close button
+  document.getElementById("wizard-close").addEventListener("click", () => {
+    localStorage.setItem("mapplot_wizard_done", "1");
+    close();
+  });
+
+  // Next buttons
+  overlay.querySelectorAll(".wz-next-btn").forEach(btn =>
+    btn.addEventListener("click", () => showStep(current + 1))
+  );
+
+  // Back buttons
+  overlay.querySelectorAll(".wz-back-btn").forEach(btn =>
+    btn.addEventListener("click", () => showStep(current - 1))
+  );
+
+  // Skip (step 0 only)
+  overlay.querySelectorAll(".wz-skip-btn").forEach(btn =>
+    btn.addEventListener("click", () => {
+      localStorage.setItem("mapplot_wizard_done", "1");
+      close();
+    })
+  );
+
+  // Save config (step 3)
+  document.getElementById("wz-save-btn").addEventListener("click", () => {
+    const databaseURL = (document.getElementById("wz-databaseURL").value || "").trim();
+    const errEl = document.getElementById("wz-error");
+    if (!databaseURL) {
+      errEl.textContent = "Database URL is required.";
+      document.getElementById("wz-databaseURL").focus();
+      return;
+    }
+    errEl.textContent = "";
+    const cfg = loadConfig();
+    FIELDS.forEach(k => {
+      const v = (document.getElementById("wz-" + k).value || "").trim();
+      if (v) cfg[k] = v;
+    });
+    saveConfig(cfg);
+    showStep(4);
+  });
+
+  // Finish (step 4)
+  document.getElementById("wz-finish-btn").addEventListener("click", () => {
+    const hosted = (document.getElementById("wz-hostedUrl").value || "").trim();
+    if (hosted) {
+      const cfg = loadConfig();
+      cfg.hostedUrl = hosted;
+      saveConfig(cfg);
+    }
+    localStorage.setItem("mapplot_wizard_done", "1");
+    close();
+    window.location.reload();
+  });
+
+  // Block Enter inside wizard inputs from accidentally advancing
+  overlay.querySelectorAll("input").forEach(input =>
+    input.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); })
+  );
+
+  // Auto-open on first run in host mode when Firebase is not configured
+  if (isHost && !isConfigured() && !localStorage.getItem("mapplot_wizard_done")) {
+    open();
+  }
+})();
+
+// =============================================================================
+// User guide
+// =============================================================================
+(function initGuide() {
+  const overlay = document.getElementById("guide-overlay");
+
+  function open()  { overlay.classList.add("open"); }
+  function close() { overlay.classList.remove("open"); }
+
+  document.getElementById("guide-btn")  .addEventListener("click", open);
+  document.getElementById("guide-close").addEventListener("click", close);
+
+  // Click backdrop to close
+  overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+})();
 
 // -- Shared helpers -----------------------------------------------------------
 function escapeHtml(str) {

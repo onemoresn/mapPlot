@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Location Map</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <title>MapPlot</title>
+  <link rel="stylesheet" href="vendor/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -44,7 +44,10 @@
         <ul id="entries"></ul>
       </div>
       <div id="sidebar-footer">
-        <button id="settings-btn">⚙ Settings</button>
+        <div id="sidebar-actions">
+          <button id="guide-btn">? Help</button>
+          <button id="settings-btn">⚙ Settings</button>
+        </div>
         <div class="nfnit-brand">
           <img src="N-FNIT Logo.png" alt="N-FNIT" class="nfnit-logo" />
           <span class="nfnit-text">N-FNIT Development</span>
@@ -58,35 +61,251 @@
   <div id="settings-overlay">
     <div id="settings-modal">
       <div id="settings-header">
-        <h2>⚙ Firebase Settings</h2>
+        <h2>⚙ Settings</h2>
         <button id="settings-close" aria-label="Close">✕</button>
       </div>
-      <p class="settings-hint">
-        Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>,
-        create a project, add a Web app, and paste the config values below.
-        Settings are saved in your browser.
-      </p>
-      <div class="settings-fields">
-        <label>API Key<input id="cfg-apiKey"            type="text"  placeholder="AIza…" autocomplete="off" /></label>
-        <label>Auth Domain<input id="cfg-authDomain"   type="text"  placeholder="your-app.firebaseapp.com" /></label>
-        <label>Database URL<input id="cfg-databaseURL"  type="text"  placeholder="https://your-app-default-rtdb.firebaseio.com" /></label>
-        <label>Project ID<input id="cfg-projectId"     type="text"  placeholder="your-project-id" /></label>
-        <label>Storage Bucket<input id="cfg-storageBucket" type="text" placeholder="your-app.appspot.com" /></label>
-        <label>Messaging Sender ID<input id="cfg-messagingSenderId" type="text" placeholder="000000000000" /></label>
-        <label>App ID<input id="cfg-appId"             type="text"  placeholder="1:000000000000:web:…" /></label>
-        <label>Measurement ID <span class="optional">(optional)</span><input id="cfg-measurementId" type="text" placeholder="G-XXXXXXXXXX" /></label>
-        <label>Hosted URL <span class="optional">(for user link)</span><input id="cfg-hostedUrl" type="text" placeholder="https://yourdomain.com" /></label>
+
+      <!-- Tab bar -->
+      <div id="settings-tabs">
+        <button class="stab active" data-tab="tab-firebase">Firebase</button>
+        <button class="stab" data-tab="tab-azure">Azure</button>
+      </div>
+
+      <!-- Firebase tab -->
+      <div class="stab-panel active" id="tab-firebase">
+        <p class="settings-hint">
+          Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>,
+          create a project, add a Web app, and paste the config values below.
+          Settings are saved in your browser.
+        </p>
+        <div class="settings-fields">
+          <label>API Key<input id="cfg-apiKey"            type="text"  placeholder="AIza…" autocomplete="off" /></label>
+          <label>Auth Domain<input id="cfg-authDomain"   type="text"  placeholder="your-app.firebaseapp.com" /></label>
+          <label>Database URL<input id="cfg-databaseURL"  type="text"  placeholder="https://your-app-default-rtdb.firebaseio.com" /></label>
+          <label>Project ID<input id="cfg-projectId"     type="text"  placeholder="your-project-id" /></label>
+          <label>Storage Bucket<input id="cfg-storageBucket" type="text" placeholder="your-app.appspot.com" /></label>
+          <label>Messaging Sender ID<input id="cfg-messagingSenderId" type="text" placeholder="000000000000" /></label>
+          <label>App ID<input id="cfg-appId"             type="text"  placeholder="1:000000000000:web:…" /></label>
+          <label>Measurement ID <span class="optional">(optional)</span><input id="cfg-measurementId" type="text" placeholder="G-XXXXXXXXXX" /></label>
+          <label>Hosted URL <span class="optional">(for user link)</span><input id="cfg-hostedUrl" type="text" placeholder="https://yourdomain.com" /></label>
+        </div>
+      </div>
+
+      <!-- Azure tab -->
+      <div class="stab-panel" id="tab-azure">
+        <p class="settings-hint">
+          Used when deploying the <code>api/</code> backend to
+          <a href="https://portal.azure.com" target="_blank" rel="noopener">Azure Static Web Apps</a>
+          with Cosmos DB + SignalR. Leave blank if you are using the Firebase backend.
+        </p>
+        <div class="settings-fields">
+          <label>Cosmos DB Connection String<input id="cfg-cosmosConnection" type="password" placeholder="AccountEndpoint=https://…" autocomplete="off" /></label>
+          <label>SignalR Connection String<input id="cfg-signalrConnection" type="password" placeholder="Endpoint=https://…" autocomplete="off" /></label>
+          <label>Azure Static Web App URL <span class="optional">(for user link)</span><input id="cfg-azureUrl" type="text" placeholder="https://agreeable-bay-042596a0f.azurestaticapps.net" /></label>
+          <label>Cosmos DB Name <span class="optional">(default: locationmap)</span><input id="cfg-cosmosDb" type="text" placeholder="locationmap" /></label>
+          <label>Cosmos DB Container <span class="optional">(default: locations)</span><input id="cfg-cosmosContainer" type="text" placeholder="locations" /></label>
+          <label>SignalR Hub Name <span class="optional">(default: locationmap)</span><input id="cfg-signalrHub" type="text" placeholder="locationmap" /></label>
+        </div>
+        <p class="settings-hint" style="margin-top:4px">
+          These values are stored only in your local app and are never embedded in the user link.
+        </p>
       </div>
       <div id="settings-actions">
+        <button id="launch-wizard-btn">Setup Wizard</button>
         <button id="settings-cancel">Cancel</button>
         <button id="settings-save">Save &amp; Reload</button>
       </div>
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <!-- ── Setup Wizard ──────────────────────────────────────────────────────── -->
+  <div id="wizard-overlay">
+    <div id="wizard-modal">
+      <button id="wizard-close" aria-label="Close wizard">✕</button>
+      <div id="wizard-progress">
+        <span class="wdot active"></span>
+        <span class="wdot"></span>
+        <span class="wdot"></span>
+        <span class="wdot"></span>
+        <span class="wdot"></span>
+      </div>
+
+      <!-- Step 1: Welcome -->
+      <div class="wz-step active" id="wz-1">
+        <div class="wz-hero">🗺️</div>
+        <h2>Welcome to MapPlot</h2>
+        <p>MapPlot displays your team's locations on a live interactive map. As the host, you share a link — your team types their location and they appear on the map instantly.</p>
+        <p class="wz-callout">You'll need a <strong>free Google account</strong> to set up the Firebase backend. This wizard takes about 5 minutes.</p>
+        <div class="wz-actions">
+          <button class="wz-skip-btn">Skip for now</button>
+          <button class="wz-next-btn">Get Started →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Create Firebase Project -->
+      <div class="wz-step" id="wz-2">
+        <h2>Step 1 — Create a Firebase Project</h2>
+        <ol class="wz-ol">
+          <li>Open <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a> and sign in</li>
+          <li>Click <strong>Add project</strong> and give it any name</li>
+          <li>Disable Google Analytics (not needed) and click <strong>Create project</strong></li>
+          <li>From the Project Overview, click the <strong>&lt;/&gt;</strong> Web icon to register a web app</li>
+          <li>Enter a nickname, click <strong>Register app</strong></li>
+          <li>Keep the <code>firebaseConfig</code> values visible — you'll paste them in Step 3</li>
+        </ol>
+        <div class="wz-actions">
+          <button class="wz-back-btn">← Back</button>
+          <button class="wz-next-btn">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Enable Realtime Database -->
+      <div class="wz-step" id="wz-3">
+        <h2>Step 2 — Enable Realtime Database</h2>
+        <ol class="wz-ol">
+          <li>In the Firebase Console left menu, click <strong>Build → Realtime Database</strong></li>
+          <li>Click <strong>Create Database</strong></li>
+          <li>Choose a region and click <strong>Next</strong></li>
+          <li>Select <strong>Start in test mode</strong>, then click <strong>Enable</strong></li>
+          <li>Copy the Database URL shown at the top of the page:<br /><code>https://your-app-default-rtdb.firebaseio.com</code></li>
+        </ol>
+        <p class="wz-warn">⚠ Test mode allows open read/write for 30 days. Update your database security rules for a permanent deployment.</p>
+        <div class="wz-actions">
+          <button class="wz-back-btn">← Back</button>
+          <button class="wz-next-btn">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Enter Config -->
+      <div class="wz-step" id="wz-4">
+        <h2>Step 3 — Paste Your Firebase Config</h2>
+        <p class="wz-hint">Copy the values from your Firebase project's web app config object.</p>
+        <div class="wz-fields">
+          <label>API Key<input id="wz-apiKey" type="text" placeholder="AIza…" autocomplete="off" /></label>
+          <label>Auth Domain<input id="wz-authDomain" type="text" placeholder="your-app.firebaseapp.com" /></label>
+          <label>Database URL <span class="wz-req">required</span><input id="wz-databaseURL" type="text" placeholder="https://your-app-default-rtdb.firebaseio.com" /></label>
+          <label>Project ID<input id="wz-projectId" type="text" placeholder="your-project-id" /></label>
+          <label>Storage Bucket<input id="wz-storageBucket" type="text" placeholder="your-app.appspot.com" /></label>
+          <label>Messaging Sender ID<input id="wz-messagingSenderId" type="text" placeholder="000000000000" /></label>
+          <label>App ID<input id="wz-appId" type="text" placeholder="1:000000000000:web:…" /></label>
+          <label>Measurement ID <span class="optional">(optional)</span><input id="wz-measurementId" type="text" placeholder="G-XXXXXXXXXX" /></label>
+        </div>
+        <p id="wz-error" class="wz-error"></p>
+        <div class="wz-actions">
+          <button class="wz-back-btn">← Back</button>
+          <button id="wz-save-btn">Save &amp; Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Done -->
+      <div class="wz-step" id="wz-5">
+        <div class="wz-hero">🎉</div>
+        <h2>You're All Set!</h2>
+        <p>MapPlot is connected to Firebase. Click <strong>Copy User Link</strong> in the sidebar to share MapPlot with your team.</p>
+        <div class="wz-field-single">
+          <label>Hosted URL <span class="optional">(optional)</span><input id="wz-hostedUrl" type="text" placeholder="https://yourdomain.com" /></label>
+          <p class="wz-hint">If MapPlot is hosted publicly, enter its URL so the shared link works from any device — not just this machine.</p>
+        </div>
+        <div class="wz-actions">
+          <button id="wz-finish-btn">Open MapPlot →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── User Guide ───────────────────────────────────────────────────────── -->
+  <div id="guide-overlay">
+    <div id="guide-modal">
+      <div id="guide-header">
+        <h2>📖 User Guide</h2>
+        <button id="guide-close" aria-label="Close guide">✕</button>
+      </div>
+      <div id="guide-body">
+
+        <section class="guide-section">
+          <h3>Overview</h3>
+          <p>MapPlot lets you collect real-time location pins from multiple people and display them on a shared interactive map. There are two roles:</p>
+          <ul>
+            <li><strong>Host</strong> — sets up Firebase, runs the map, and shares the user link.</li>
+            <li><strong>User</strong> — opens the shared link and submits their location.</li>
+          </ul>
+          <p>All data is stored in your own Firebase Realtime Database. Nothing passes through any third-party server.</p>
+        </section>
+
+        <section class="guide-section">
+          <h3>For Hosts</h3>
+          <h4>First-time setup</h4>
+          <ol>
+            <li>On first launch the <strong>Setup Wizard</strong> opens automatically. Follow the steps to connect a free Firebase project.</li>
+            <li>To edit your configuration later, click <strong>⚙ Settings</strong>. To re-run the wizard, click <strong>Setup Wizard</strong> inside Settings.</li>
+          </ol>
+          <h4>The map view</h4>
+          <ul>
+            <li>The <strong>sidebar</strong> lists every pinned location, sorted by number of people.</li>
+            <li>Click any entry to fly the map to that location and open its popup.</li>
+            <li>The <strong>status dot</strong> pulses green when syncing live, or yellow while connecting.</li>
+          </ul>
+          <h4>Sharing with users</h4>
+          <ol>
+            <li>Click <strong>Copy User Link</strong> in the sidebar.</li>
+            <li>Share the copied URL via chat, email, or QR code.</li>
+            <li>Recipients open the link on any device — no install needed.</li>
+          </ol>
+          <p class="guide-note">The user link embeds your Firebase config. Do not share it publicly if your database rules are open.</p>
+          <h4>Resetting the map</h4>
+          <p>Click <strong>Reset Map</strong> to delete all pins for everyone. This cannot be undone.</p>
+        </section>
+
+        <section class="guide-section">
+          <h3>For Users</h3>
+          <ol>
+            <li>Open the link shared by your host.</li>
+            <li>Type your location — a city, region, country, or postal code.</li>
+            <li>Click <strong>Pin My Location</strong> or press <kbd>Enter</kbd>.</li>
+          </ol>
+          <p>Your pin appears on the host's map within seconds. Submitting again moves your existing pin — no duplicate is created.</p>
+          <p class="guide-note">Location is stored per-device. Clearing your browser or app data will remove your pin.</p>
+        </section>
+
+        <section class="guide-section">
+          <h3>Firebase Config Reference</h3>
+          <table class="guide-table">
+            <thead><tr><th>Field</th><th>Where to find it</th></tr></thead>
+            <tbody>
+              <tr><td>API Key</td><td>Project Settings → General → Your apps → Web API key</td></tr>
+              <tr><td>Auth Domain</td><td>Project Settings → General → Your apps → authDomain</td></tr>
+              <tr><td>Database URL</td><td>Realtime Database → Data tab (top of page)</td></tr>
+              <tr><td>Project ID</td><td>Project Settings → General → Project ID</td></tr>
+              <tr><td>Storage Bucket</td><td>Project Settings → General → Your apps → storageBucket</td></tr>
+              <tr><td>Messaging Sender ID</td><td>Project Settings → General → Your apps → messagingSenderId</td></tr>
+              <tr><td>App ID</td><td>Project Settings → General → Your apps → appId</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="guide-section">
+          <h3>Troubleshooting</h3>
+          <dl class="guide-dl">
+            <dt>Location not found</dt>
+            <dd>Try a broader term — use a city or country instead of a full street address.</dd>
+            <dt>Map not updating / yellow dot</dt>
+            <dd>Check your Firebase config in <strong>⚙ Settings</strong>. Make sure the Database URL is correct and Realtime Database is enabled.</dd>
+            <dt>Pins not saving (permission denied)</dt>
+            <dd>In the Firebase Console, go to <strong>Realtime Database → Rules</strong> and confirm <code>.write</code> is <code>true</code> or appropriately scoped.</dd>
+            <dt>User link says "missing configuration"</dt>
+            <dd>Re-copy the user link from the sidebar after saving your config — the link automatically embeds the config.</dd>
+            <dt>Firebase test mode expired</dt>
+            <dd>Test mode lasts 30 days. Update your database rules in the Firebase Console to re-allow writes.</dd>
+          </dl>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/leaflet.js"></script>
+  <script src="vendor/firebase-app-compat.js"></script>
+  <script src="vendor/firebase-database-compat.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

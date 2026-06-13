@@ -2,25 +2,27 @@
   "name": "mapplot",
   "version": "1.0.0",
   "description": "Real-time location map powered by Firebase",
+  "author": "N-FNIT Development",
   "main": "electron/main.js",
   "scripts": {
-    "start":      "node server.js",
-    "electron":   "electron .",
-    "icon":       "node scripts/build-icon.js",
-    "build:win":  "npm run icon && electron-builder --win"
+    "start": "node server.js",
+    "electron": "electron .",
+    "icon": "node scripts/build-icon.js",
+    "build:win": "npm run icon && electron-builder --win"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "express": "^4.19.2"
   },
   "devDependencies": {
-    "electron":         "^30.0.0",
+    "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
-    "png-to-ico":       "^2.1.8"
+    "png-to-ico": "^2.1.8"
   },
   "build": {
-    "appId":       "com.nfnit.mapplot",
+    "appId": "com.nfnit.mapplot",
     "productName": "MapPlot",
-    "copyright":   "Copyright © 2024 N-FNIT Development",
+    "copyright": "Copyright © 2024 N-FNIT Development",
     "files": [
       "index.html",
       "app.js",
@@ -28,22 +30,29 @@
       "MapPlot.png",
       "N-FNIT Logo.png",
       "electron/**",
+      "vendor/**",
       "build/icon.ico"
     ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon":   "build/icon.ico"
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
     },
     "nsis": {
-      "oneClick":                       false,
+      "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut":          true,
-      "createStartMenuShortcut":        true,
-      "shortcutName":                   "MapPlot"
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MapPlot"
+    },
+    "publish": {
+      "provider": "github",
+      "releaseType": "release"
     },
     "directories": {
-      "output": "dist"
+      "output": "release"
     }
   }
 }
-

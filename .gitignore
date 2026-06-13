@@ -4,3 +4,9 @@ locations.json
 pb_data/
 pocketbase.exe
 pocketbase
+
+# Build outputs
+release/
+dist/
+dist_new/
+release_new/

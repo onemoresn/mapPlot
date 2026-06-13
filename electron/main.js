@@ -1,5 +1,6 @@
-const { app, BrowserWindow, shell, Menu } = require('electron');
+const { app, BrowserWindow, shell, Menu, dialog } = require('electron');
 const path = require('path');
+const { autoUpdater } = require('electron-updater');
 
 function createWindow() {
   const iconPath = path.join(__dirname, '..', 'build', 'icon.ico');
@@ -43,12 +44,25 @@ function createWindow() {
     return { action: 'deny' };
   });
 
+  // Handle renderer-process crashes
+  win.webContents.on('render-process-gone', (_event, details) => {
+    if (details.reason !== 'clean-exit') {
+      dialog.showErrorBox('MapPlot crashed', `The app encountered an error (${details.reason}) and needs to reload.`);
+      win.reload();
+    }
+  });
+
   // Remove default menu bar (keeps the app clean)
   Menu.setApplicationMenu(null);
 }
 
 app.whenReady().then(() => {
   createWindow();
+
+  // Check for updates silently after launch (only in packaged app)
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

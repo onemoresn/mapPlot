@@ -1,0 +1,14 @@
+{
+  "files.exclude": {
+    "release/win-unpacked": true,
+    "release_new":          true,
+    "dist":                 true,
+    "dist_new":             true
+  },
+  "files.watcherExclude": {
+    "**/release/win-unpacked/**": true,
+    "**/release_new/**":          true,
+    "**/dist/**":                 true,
+    "**/dist_new/**":             true
+  }
+}
